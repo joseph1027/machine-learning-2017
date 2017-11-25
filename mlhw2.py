@@ -1,6 +1,7 @@
 import numpy as np
 import csv
 import math 
+import sys
 
 global counter
 
@@ -12,8 +13,8 @@ class node:
 		self.divide = None
 		self.searched = None
 
-def read_file():#Read csv into list and remove the first row. Then change data from string to float.
-	with open('train.csv','r') as f:
+def read_file(filename):#Read csv into list and remove the first row. Then change data from string to float.
+	with open(filename,'r') as f:
 		reader = csv.reader(f)
 		all_data = list(reader)
 		#print('ALL_DATA_PRE:',len(all_data))
@@ -67,10 +68,8 @@ def reset_node(current_node):
 	if current_node.right_child is not None:
 		reset_node(current_node.right_child)
 
-def test(root,train_data):
+def test(root,test_data):
 	text_file = open("output.txt","w")
-	test_data = []
-	test_data.extend(train_data[0:36])
 	#print(test_data)
 	origin_class = None
 	predict_class = None
@@ -177,8 +176,11 @@ def tree_go(root):
 		return
 
 if __name__ == '__main__':
+	train_name = sys.argv[1]
+	test_name = sys.argv[2]
 	root = None
-	training_data = read_file()
+	training_data = read_file(train_name)
+	testing_data = read_file(test_name)
 	#print(float(training_data[0][2]))
 	#print(type(training_data[0][12]))
 	root = build_tree(root,training_data,2)
@@ -188,11 +190,8 @@ if __name__ == '__main__':
 	#print('TREE GO!')
 	#tree_go(root)
 	#print (counter)
-	test(root,training_data)
+	test(root,testing_data)
 	#print('T 0:',training_data[0])
 	#print('RL :',root.left_child.value)
 
 	#print(distance(training_data[0],root.left_child))
-
-
-
