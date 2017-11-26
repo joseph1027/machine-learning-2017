@@ -123,7 +123,7 @@ def reset_node(current_node):
 		reset_node(current_node.right_child)
 
 def test(root,test_data):
-	text_file = open("output.txt","w")
+	text_file = open("output.txt","a")
 	#print(test_data)
 	origin_class = None
 	predict_class = None
@@ -154,12 +154,12 @@ def test(root,test_data):
 			#print('Origin:',origin_class,' Predict:',final_predict_class)
 			if origin_class == final_predict_class:
 				correct = correct + 1
-		text_file.write('KNN accuracy: ' + str(float(correct/36.0)) + '\n')
-		for cnt in range(0,3):
+		text_file.write('K = ' + str(number) + ', KNN_PCA accuracy: ' + str(float(correct/36.0)) + '\n')
+		"""for cnt in range(0,3):
 			for out_index in range(len(result[cnt])):
 				text_file.write(str(result[cnt][out_index]) + ' ')
 			text_file.write('\n')
-		text_file.write('\n')
+		text_file.write('\n')"""
 	text_file.close()		
 					
 def knn(root,query_data):
