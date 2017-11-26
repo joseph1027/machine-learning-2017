@@ -26,7 +26,7 @@ def read_file(filename):#Read csv into list and remove the first row. Then chang
 
 	return all_data
 
-def PCA(training_data,testing_data,topN = 4):
+def PCA(training_data,testing_data):
 	training_data_values = [[] for j in range(len(training_data))]
 	testing_data_values = [[] for g in range(len(testing_data))]
 
@@ -44,7 +44,7 @@ def PCA(training_data,testing_data,topN = 4):
 	covMat = np.cov (mean_removed_matrix, rowvar = 0)
 	t_covMat = np.cov (t_mean_removed_matrix , rowvar = 0)
 	eigenvalue,eigenvector = np.linalg.eig(np.mat(covMat))
-	#topN = top_N_attributes_analysys(eigenvalue)
+	topN = threshold(eigenvalue)
 	eigenvalue_index = np.argsort(eigenvalue)
 	eigenvalue_index = eigenvalue_index[:(topN):-1]
 	top_eigen_vector = eigenvector[:,eigenvalue_index]
@@ -57,16 +57,25 @@ def PCA(training_data,testing_data,topN = 4):
 	for k in range(len(training_data)):
 		lowDDataMat[k].insert(0,training_data[k][0])
 		lowDDataMat[k].insert(1,training_data[k][1])
-		lowDDataMat[k].insert(6,training_data[k][11])
+		lowDDataMat[k].insert(topN+2,training_data[k][11])
 
 	for f in range(len(testing_data)):
 		t_lowDDataMat[f].insert(0,testing_data[f][0])
 		t_lowDDataMat[f].insert(1,testing_data[f][1])
-		t_lowDDataMat[f].insert(6,testing_data[f][11])
+		t_lowDDataMat[f].insert(topN+2,testing_data[f][11])
 
-	return lowDDataMat,t_lowDDataMat
+	return lowDDataMat,t_lowDDataMat,topN
 
-
+def threshold(eigenvalue):
+	topn = 0
+	accu_value = 0.0
+	sorted_value = sorted(eigenvalue,reverse = True)
+	total_eigenvalue = sum(sorted_value)
+	for i in range(len(eigenvalue)):
+		accu_value = accu_value + sorted_value[i]
+		topn = topn + 1
+		if accu_value > total_eigenvalue*0.8:
+			return topn
 
 """def top_N_attributes_analysys(eigen_values):
     top_N = 0
@@ -80,7 +89,7 @@ def PCA(training_data,testing_data,topN = 4):
         if cur_sum >= sum_eigen_values*0.85:
             return top_N"""
 
-def build_tree(root,train_data,divide_column):
+def build_tree(root,train_data,divide_column,topn):
 	data_len = len(train_data)
 	root = node()
 	train_data = sorted(train_data,key=lambda x: x[divide_column])
@@ -89,7 +98,7 @@ def build_tree(root,train_data,divide_column):
 	root.divide = divide_column
 
 	#print('divide_column:',divide_column)
-	if(divide_column== 5):
+	if(divide_column== topn+1):
 		divide_column = 2
 	else:
 		divide_column = divide_column + 1
@@ -110,9 +119,9 @@ def build_tree(root,train_data,divide_column):
 		rcnt = rcnt+1
 		print(rcnt)
 	print('\n')"""
-	root.left_child = build_tree(root.left_child,train_data[:median_index],divide_column)
+	root.left_child = build_tree(root.left_child,train_data[:median_index],divide_column,topn)
 	if data_len > 2:
-		root.right_child = build_tree(root.right_child,train_data[median_index+1:],divide_column)
+		root.right_child = build_tree(root.right_child,train_data[median_index+1:],divide_column,topn)
 	return root
 
 def reset_node(current_node):
@@ -122,7 +131,7 @@ def reset_node(current_node):
 	if current_node.right_child is not None:
 		reset_node(current_node.right_child)
 
-def test(root,test_data):
+def test(root,test_data,topn):
 	text_file = open("output.txt","a")
 	#print(test_data)
 	origin_class = None
@@ -139,7 +148,7 @@ def test(root,test_data):
 			reset_node(root)
 			result_table = {'cp':0,'im':0,'pp':0,'imU':0,'om':0,'omL':0,'imL':0,'imS':0}
 			for k in range(0,number):
-				nearest_neighbor,predict_class = knn(root,query_data)
+				nearest_neighbor,predict_class = knn(root,query_data,topn)
 				result_table[predict_class] = result_table[predict_class] + 1
 				if(data_index >= 0 and data_index <= 2):
 					result[data_index].append(nearest_neighbor)
@@ -162,14 +171,14 @@ def test(root,test_data):
 		text_file.write('\n')"""
 	text_file.close()		
 					
-def knn(root,query_data):
+def knn(root,query_data,topn):
 	cur_node = root
 	nearest = None
 	min_distance = 1000000.0
 	record = []
 	while cur_node is not None:
 		record.append(cur_node)
-		cur_distance = distance(query_data,cur_node.value)
+		cur_distance = distance(query_data,cur_node.value,topn)
 		cur_divide = cur_node.divide
 		if cur_distance < min_distance and cur_node.searched == 0:
 			nearest = cur_node
@@ -190,7 +199,7 @@ def knn(root,query_data):
 			if cur_node is not None:
 				while cur_node is not None:
 					record.append(cur_node)
-					cur_distance = distance(query_data,cur_node.value)
+					cur_distance = distance(query_data,cur_node.value,topn)
 					cur_divide = cur_node.divide
 					if cur_distance < min_distance and cur_node.searched == 0:
 						nearest = cur_node
@@ -201,16 +210,16 @@ def knn(root,query_data):
 						cur_node = cur_node.right_child
 	nearest.searched = 1
 	nearest_index = nearest.value[0]
-	nearest_class = nearest.value[6]
+	nearest_class = nearest.value[-1]
 	return nearest_index,nearest_class
 						
 
 
-def distance(query_data,cur_node_data):
+def distance(query_data,cur_node_data,topn):
 	a = query_data
 	b = cur_node_data
 	value = 0
-	for i in range (2,5):#2~10
+	for i in range (2,topn+2):#2~10
 		value = value + math.pow(a[i] - b[i],2)
 	value = math.sqrt(value)
 	return value
@@ -235,20 +244,20 @@ if __name__ == '__main__':
 	root = None
 	training_data = read_file(train_name)
 	testing_data = read_file(test_name)
-	after_pca_training,after_pca_testing = PCA(training_data,testing_data)
-	print(after_pca_training)
+	after_pca_training,after_pca_testing,topn = PCA(training_data,testing_data)
+	#print(after_pca_training)
 
 	#print('TOPN: ',topn)
 	#print(float(training_data[0][2]))
 	#print(type(training_data[0][12]))
-	root = build_tree(root,after_pca_training,2)
+	root = build_tree(root,after_pca_training,2,topn)
 	global counter
 	counter = 0
 
 	#print('TREE GO!')
 	#tree_go(root)
 	#print (counter)
-	test(root,after_pca_testing)
+	test(root,after_pca_testing,topn)
 	#print('T 0:',training_data[0])
 	#print('RL :',root.left_child.value)
 
