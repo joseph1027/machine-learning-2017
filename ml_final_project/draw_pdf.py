@@ -38,7 +38,10 @@ def draw_PDF(df): #draw the pdf of each column
     
     transmission_count = sample_df.groupby(['transmission']).size()
     
-    print(transmission_count)
+    sample_df['seat_count'] = sample_df['seat_count'].astype(int)
+    seat_count = sample_df.groupby(['seat_count']).size()
+    
+    print(seat_count)
     
     makers = maker_count.keys()
     maker_list = []
@@ -79,6 +82,16 @@ def draw_PDF(df): #draw the pdf of each column
         door_count_list.append(door_count[i])
         door_sum = door_sum + door_count[i]
     
+    seats = seat_count.keys()
+    seat_count = seat_count.tolist()
+    seat_list = []
+    seat_count_list = []
+    seat_sum = 0
+    for i in range(len(seats)):
+        seat_list.append(seats[i])
+        seat_count_list.append(seat_count[i])
+        seat_sum = seat_sum + seat_count[i]
+    
     
     #print(year_list)
     #print(year_count_list)
@@ -110,6 +123,13 @@ def draw_PDF(df): #draw the pdf of each column
     plt.show()
         
     plt.plot(['auto','man'],[transmission_count[0]/1000,transmission_count[1]/1000])
+    plt.tight_layout()
+    plt.show()
+    
+    plt.xticks(np.arange(min(seat_list), max(seat_list)+1, 1.0))
+    for k in range(len(seat_count_list)):
+        seat_count_list[k] = seat_count_list[k]/seat_sum
+    plt.plot(seat_list,seat_count_list)
     plt.tight_layout()
     plt.show()
     
