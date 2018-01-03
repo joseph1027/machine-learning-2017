@@ -25,11 +25,13 @@ def draw_PDF(df): #draw the pdf of each column
     df = df.mask(df.astype(object).eq('None')).dropna()
     sample_df = df.sample(n=1000)
     
-    #print(sample_df)
+    print(sample_df)
     maker_count = sample_df.groupby(['maker']).size()
     
     year_count = sample_df.groupby(['manufacture_year']).size()
-    #print(year_count)
+    
+    fuel_count = sample_df.groupby(['fuel_type']).size()
+    print(fuel_count)
     
     makers = maker_count.keys()
     maker_list = []
@@ -51,6 +53,15 @@ def draw_PDF(df): #draw the pdf of each column
         year_count_list.append(year_count[i])
         year_sum = year_sum + year_count[i]
     
+    fuel = fuel_count.keys()
+    fuel_list = []
+    fuel_count_list = []
+    fuel_sum = 0
+    for i in range(len(fuel)):
+        fuel_list.append(fuel[i])
+        fuel_count_list.append(fuel_count[i])
+        fuel_sum = fuel_sum + fuel_count[i]
+    
     
     #print(year_list)
     #print(year_count_list)
@@ -60,11 +71,17 @@ def draw_PDF(df): #draw the pdf of each column
     plt.tight_layout()
     plt.show()
     
-    plt.figure(figsize=(10,5))
+    #plt.figure(figsize=(10,5))
     #print(type(year_list))
-    #print(type(year_count_list))
+    #print((year_count_list))
+    for k in range(len(year_count_list)):
+        year_count_list[k] = year_count_list[k]/year_sum
     plt.plot(year_list,year_count_list)
     plt.xticks(np.arange(min(year_list), max(year_list)+1, 5.0))
+    plt.tight_layout()
+    plt.show()
+    
+    plt.plot(fuel_list,fuel_count_list/fuel_sum)
     plt.tight_layout()
     plt.show()
         
