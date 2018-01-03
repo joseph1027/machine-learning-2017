@@ -35,7 +35,10 @@ def draw_PDF(df): #draw the pdf of each column
     sample_df['door_count'] = sample_df['door_count'].astype(int)
     
     door_count = sample_df.groupby(['door_count']).size()
-    print(door_count)
+    
+    transmission_count = sample_df.groupby(['transmission']).size()
+    
+    print(transmission_count)
     
     makers = maker_count.keys()
     maker_list = []
@@ -106,5 +109,9 @@ def draw_PDF(df): #draw the pdf of each column
     plt.tight_layout()
     plt.show()
         
+    plt.plot(['auto','man'],[transmission_count[0]/1000,transmission_count[1]/1000])
+    plt.tight_layout()
+    plt.show()
+    
 if __name__ == '__main__':
     draw_PDF(preprocessing())
