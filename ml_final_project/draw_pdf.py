@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import neighbors
 from sklearn import tree 
+import scipy.stats as stats
 
 def preprocessing():
     df = pd.read_csv('car.csv')
@@ -42,6 +43,27 @@ def draw_PDF(df): #draw the pdf of each column
     seat_count = sample_df.groupby(['seat_count']).size()
     
     print(seat_count)
+    
+    pdf = np.array(sample_df)
+    #plt.figure()
+    
+    for i in [2,4,5,10]:
+        tdf = pdf[:,i]
+        tdf.sort()
+        print('sort')
+        #mean = np.mean(tdf)
+        weights = np.ones_like(tdf)/float(len(tdf))
+        print('weight')
+        #std = np.std(tdf)
+        #pdf = stats.norm.pdf(tdf,mean,std)
+        #plt.plot(tdf,pdf)
+        if i==2:
+            plt.hist(tdf,weights=weights,bins=[0,20000,40000,60000,80000,100000,120000,140000,160000,180000,200000,220000])
+        else:
+            plt.hist(tdf,weights=weights)
+        print('hist')
+        plt.tight_layout()
+        plt.show()
     
     makers = maker_count.keys()
     maker_list = []
