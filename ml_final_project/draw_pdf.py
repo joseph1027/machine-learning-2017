@@ -50,6 +50,8 @@ def draw_PDF(df): #draw the pdf of each column
     for i in [2,4,5,10]:
         tdf = pdf[:,i]
         tdf.sort()
+        tdf = tdf.tolist()
+        print(type(tdf))
         print('sort')
         #mean = np.mean(tdf)
         weights = np.ones_like(tdf)/float(len(tdf))
@@ -58,7 +60,9 @@ def draw_PDF(df): #draw the pdf of each column
         #pdf = stats.norm.pdf(tdf,mean,std)
         #plt.plot(tdf,pdf)
         if i==2:
-            plt.hist(tdf,weights=weights,bins=[0,20000,40000,60000,80000,100000,120000,140000,160000,180000,200000,220000])
+            plt.hist(tdf,bins=list(range(0,400000,20000)),weights=weights)
+        elif i==10:
+            plt.hist(tdf,bins=list(range(0,150000,5000)),weights=weights)
         else:
             plt.hist(tdf,weights=weights)
         print('hist')
